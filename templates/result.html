@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>搜尋結果 - {{ keyword }}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        background-image: url('../static/indexbg.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.3);
+        z-index: 1;
+      }
+
+      .container {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 800px;
+        padding: 2rem;
+      }
+      .search-results-header {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .search-results-header h1 {
+        color: #444;
+        margin: 0;
+        font-size: 2rem;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+      }
+
+      .article-card {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .article-meta {
+        color: #777;
+        font-size: 0.9rem;
+      }
+      .article-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .article-id {
+        color: rgba(255, 156, 91, 0.9);
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+
+      .article-title {
+        color: #333;
+        margin: 0.5rem 0;
+        font-size: 1.4rem;
+      }
+
+      .article-intro {
+        color: #666;
+        margin: 1rem 0;
+        line-height: 1.6;
+      }
+
+      .article-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        color: #777;
+      }
+      /* 新增卡片底部容器 */
+      .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+      }
+
+      .article-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .read-more {
+        display: inline-block;
+        padding: 8px 20px;
+        background-color: rgba(255, 156, 91, 0.9);
+        color: white;
+        text-decoration: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      .read-more:hover {
+        background-color: rgba(255, 127, 80, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(255, 156, 91, 0.4);
+      }
+
+      .back-button {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #4285f4;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        text-align: center;
+      }
+
+      .back-button:hover {
+        background-color: #3367d6;
+      }
+
+      .no-results {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .no-results h3 {
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .article-meta {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .search-results-header h1 {
+          font-size: 1.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .card-bottom {
+          flex-direction: column;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+
+        .article-meta {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .read-more {
+          align-self: flex-end; /* 在手機版時按鈕靠右 */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      {% if keyword %}
+      <div class="search-results-header">
+        <h1>搜尋結果: {{ keyword }}</h1>
+      </div>
+      {% endif %}
+
+      <div id="search-results">
+        {% if res_list %} {% for res in res_list %}
+        <div class="article-card">
+          <div class="article-id">#{{ res.ID }}</div>
+          <h3 class="article-title">{{ res.title }}</h3>
+          <p class="article-intro">{{ res.introduction }}</p>
+          <div class="card-bottom">
+            <div class="article-meta">
+              <span class="author">作者: {{ res.author }}</span>
+              <span class="source">來源: {{ res.source }}</span>
+              <span class="date">日期: {{ res.date }}</span>
+            </div>
+            <a href="{{ res.href }}" target="_blank" class="read-more"
+              >閱讀完整文章</a
+            >
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="no-results">
+          <h3>沒有找到與 "{{ keyword }}" 相關的旅遊文章</h3>
+          <p>請嘗試使用其他關鍵字，或者選擇熱門目的地標籤。</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <a href="/" class="back-button">返回搜尋</a>
+    </div>
+  </body>
+</html>
