@@ -136,4 +136,4 @@ def tag_search(tag):
 if __name__ == '__main__':
     # 使用不同的端口，避免與 AirPlay 衝突
     port = int(os.environ.get("PORT", 8080))  # 改為 8080 端口
-    app.run(host='0.0.0.0', port=port)開始搜尋關鍵字
+    app.run(host='0.0.0.0', port=port)
