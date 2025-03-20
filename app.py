@@ -4,6 +4,8 @@
 這個模塊實現了一個 Web 應用，允許用戶搜尋來自不同平台的旅遊相關文章，
 包括基於關鍵字的搜尋和預定義國家標籤的快速搜尋。
 """
+import os
+
 from flask import Flask, render_template, redirect, url_for, request
 from nomad import run_scraper  # 導入 run_scraper 函數
 
@@ -132,4 +134,6 @@ def tag_search(tag):
     return render_template('result.html', res_list=res_list, keyword=tag)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # 使用不同的端口，避免與 AirPlay 衝突
+    port = int(os.environ.get("PORT", 8080))  # 改為 8080 端口
+    app.run(host='0.0.0.0', port=port)開始搜尋關鍵字

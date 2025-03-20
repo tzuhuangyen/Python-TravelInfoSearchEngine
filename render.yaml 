@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: travel-search-engine
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - name: FLASK_APP
+        value: app.py
+      - name: FLASK_ENV
+        value: development
+      - name: FLASK_DEBUG
+        value: 1
+      - name: FLASK_RUN_HOST
+        value: 0.0.0.0
+      - name: FLASK_RUN_PORT
+        value: 8080
+      - name: FLASK_RUN_RELOADER

@@ -4,7 +4,7 @@ A Flask-based search engine that allows users to search for travel-related artic
 
 ## Project Overview
 
-This web application built with Python Flask provides a centralized platform for searching travel content from Medium and Dcard. It focuses on popular travel destinations like Japan, Korea, Thailand, UK, and Spain.
+This web application built with Python Flask provides a centralized platform for searching travel content from Medium, Dcard, PTT, and Backpackers. It focuses on popular travel destinations like Japan, Korea, Thailand, UK, and Spain.
 
 ## Key Features
 
@@ -27,8 +27,8 @@ This web application built with Python Flask provides a centralized platform for
 1. Clone this project
 
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/tzuhuangyen/Python-TravelInfoSearchEngine.git
+cd Python-TravelInfoSearchEngine
 ```
 
 2. Install dependencies
@@ -49,7 +49,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-2. Visit `http://127.0.0.1:5000/` in your browser
+2. Visit `http://127.0.0.1:8080/` in your browser (Note: Port changed to 8080 to avoid conflicts with AirPlay)
 
 3. Enter keywords or click on country tags to search
 
@@ -58,10 +58,10 @@ python app.py
 ## Project Structure
 
 - `app.py`: Main application entry and route handling
-- `scraper.py`: Web scraping functionality
+- `nomad.py`: Web scraping functionality
 - `templates/`: HTML templates
+- `static/`: Static assets like images and CSS
 - `chromedriver-mac-arm64/`: ChromeDriver executable
-- `cache/`: Caching implementation and configuration
 
 ## Search Mechanism
 
@@ -69,15 +69,20 @@ The application uses Selenium WebDriver to search and scrape travel-related cont
 
 1. **Medium**: Articles related to keywords and travel
 2. **Dcard**: Travel-related posts from Taiwanese social media platform
+3. **PTT**: Travel content from Taiwan's largest bulletin board system
+4. **Backpackers**: Travel guides and experiences from backpackers.com.tw
 
-## Caching System
+## Troubleshooting
 
-The project implements result caching to improve efficiency:
+If you encounter search timeout errors:
+- Try using different keywords
+- Check your internet connection
+- Ensure your ChromeDriver version matches your Chrome browser
+- Adjust the timeout settings in the scraper code
 
-- Uses Flask-Caching extension with in-memory cache
-- Stores search results by keyword
-- Implements TTL (Time To Live) mechanism for content freshness
-- Pre-warms cache for popular keywords
+If you get a "Port 5000 is in use" error:
+- Use a different port by modifying the port number in app.py
+- On macOS, disable AirPlay Receiver from System Preferences > General > AirDrop & Handoff
 
 ## Important Notes
 
@@ -93,13 +98,17 @@ The project implements result caching to improve efficiency:
 - Optimize mobile display
 - Expand caching functionality for larger deployments
 
+## Deployed Version
+
+A live version of this application is deployed at [https://travel-search-engine.onrender.com](https://travel-search-engine.onrender.com)
+
 # 旅遊部落格搜尋引擎
 
 一個基於 Flask 的旅遊部落格搜尋引擎，允許用戶搜尋來自不同平台的旅遊相關文章和內容。
 
 ## 專案概述
 
-這個專案是一個網頁應用程式，使用 Python Flask 框架構建，旨在為用戶提供一個集中式平台，搜尋來自 Medium 和 Dcard 等網站的旅遊相關內容。
+這個專案是一個網頁應用程式，使用 Python Flask 框架構建，旨在為用戶提供一個集中式平台，搜尋來自 Medium、Dcard、PTT 和背包客棧等網站的旅遊相關內容。
 
 ## 主要功能
 
@@ -126,8 +135,8 @@ The project implements result caching to improve efficiency:
 1. git clone 複製此專案到本地環境
 
 ```bash
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/tzuhuangyen/Python-TravelInfoSearchEngine.git
+cd Python-TravelInfoSearchEngine
 ```
 
 2. 安裝所需依賴
@@ -148,7 +157,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-2. 在瀏覽器中訪問 `http://127.0.0.1:5000/`
+2. 在瀏覽器中訪問 `http://127.0.0.1:8080/`
 
 3. 使用搜尋欄輸入關鍵字，或點擊預設國家標籤進行搜尋
 
@@ -157,15 +166,12 @@ python app.py
 ## 專案結構
 
 - `app.py`: 主應用程式入口和路由處理
-- `scraper.py`: 網頁爬蟲功能，負責抓取 Medium 和 Dcard 的內容
-- `original_scraper.py`: 原始爬蟲實現
-- `nomad.py`: 輔助爬蟲功能
+- `nomad.py`: 網頁爬蟲功能，負責抓取各平台的內容
 - `templates/`: HTML 模板
   - `index.html`: 首頁和搜尋介面
   - `result.html`: 搜尋結果頁面
-- `src/components/`: 前端組件
+- `static/`: 靜態資源，包括圖片和CSS
 - `chromedriver-mac-arm64/`: ChromeDriver 執行檔
-- `cache/`: 快取相關實現和配置
 
 ## 搜尋原理
 
@@ -173,35 +179,35 @@ python app.py
 
 1. **Medium**: 搜尋與關鍵字相關的旅遊文章
 2. **Dcard**: 搜尋台灣社交媒體平台 Dcard 上的旅遊相關貼文
+3. **PTT**: 搜尋台灣最大的電子佈告欄系統中的旅遊內容
+4. **背包客棧**: 搜尋背包客棧網站上的旅遊指南和經驗分享
 
-爬蟲會抓取文章標題、內容摘要、作者、發布日期和原始連結，並在搜尋結果頁面中呈現。
+## 故障排除
 
-## 快取機制
+如果遇到搜尋超時錯誤：
+- 嘗試使用不同的關鍵字
+- 檢查您的網路連接
+- 確保您的 ChromeDriver 版本與 Chrome 瀏覽器版本匹配
+- 調整爬蟲代碼中的超時設置
 
-為了提高應用程式的效率和減少對目標網站的請求負擔，本專案實現了搜尋結果快取功能：
-
-### 技術實現
-
-- **Flask-Caching**: 使用 Flask-Caching 擴展來管理快取，簡化快取操作和配置
-- **SimpleCache**: 基於字典的記憶體內快取，適合單機部署
-- **快取鍵生成**: 使用搜尋關鍵字作為快取鍵，確保相同搜尋條件能夠命中快取
-- **TTL 機制**: 設定快取過期時間 (Time To Live)，定期更新以確保內容新鮮度
-
-### 工作流程
-
-1. 接收用戶搜尋請求時，首先檢查關鍵字是否存在於快取中
-2. 如果快取命中，直接返回快取的搜尋結果，避免重複爬取
-3. 如果快取未命中，執行爬蟲獲取搜尋結果，並將結果存入快取
-4. 根據設定的 TTL 參數，自動管理快取的生命週期
-
-### 效能優化
-
-- 預熱機制: 對熱門關鍵字 (如 '日本', '韓國' 等) 預先執行爬蟲並存入快取
-- 快取統計: 記錄快取命中率和未命中次數，優化快取策略
-- 差異化 TTL: 為不同類型的搜尋關鍵字設定不同的快取過期時間
+如果遇到「Port 5000 is in use」錯誤：
+- 通過修改 app.py 中的端口號使用不同的端口
+- 在 macOS 上，從系統偏好設置 > 通用 > AirDrop 和 Handoff 中禁用 AirPlay 接收器
 
 ## 注意事項
 
 - 本應用程式僅用於學習和研究目的
 - 請尊重各網站的使用條款和爬蟲政策
-- 爬蟲可能會因目標網站
+- 爬蟲可能會因目標網站結構變化而失效，需要定期維護
+
+## 未來計劃
+
+- 增加更多旅遊內容來源
+- 實現更準確的內容相關性排名
+- 添加用戶收藏和分享功能
+- 優化移動端顯示
+- 擴展快取功能以支持更大規模部署
+
+## 線上版本
+
+本應用程式的線上版本已部署在 [https://travel-search-engine.onrender.com](https://travel-search-engine.onrender.com)

@@ -7,6 +7,7 @@
 import time
 import logging
 from typing import Dict, List, Tuple, Any, Optional
+import os
 
 from flask import Flask
 from selenium import webdriver
@@ -41,9 +42,9 @@ def convert_num(n: int) -> str:
     """
     return str(n).zfill(2)
 
-def create_driver(headless: bool = False) -> webdriver.Chrome:
+def create_driver(headless: bool = True) -> webdriver.Chrome:
     """
-    創建並配置 Chrome WebDriver實例，這個實例將用於自動化控制 Chrome 瀏覽器進行網頁爬蟲。
+    創建並配置 Chrome WebDriver實例，適用於雲環境。
     
     Args:
         headless: 是否使用無頭模式（不顯示瀏覽器界面）
@@ -54,20 +55,31 @@ def create_driver(headless: bool = False) -> webdriver.Chrome:
     options = Options()
     options.add_argument("--incognito")  # 使用無痕模式
     
-    if headless:
-        options.add_argument("--headless")  # 無頭模式
+    # 在雲環境中總是使用無頭模式
+    options.add_argument("--headless")
     
-    # 添加其他有用的選項
+    # 添加其他必要的選項
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--no-sandbox")
     
-    # 設定 user-agent 以減少被識別為爬蟲的可能性
+    # 設定 user-agent
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
     
-    return webdriver.Chrome(options=options)
-
+    # 使用環境變數中的 Chrome 二進制文件路徑（如果有）
+    chrome_binary = os.environ.get("GOOGLE_CHROME_BIN")
+    if chrome_binary:
+        options.binary_location = chrome_binary
+    
+    # 使用環境變數中的 ChromeDriver 路徑（如果有）
+    chrome_driver_path = os.environ.get("CHROMEDRIVER_PATH")
+    if chrome_driver_path:
+        service = Service(executable_path=chrome_driver_path)
+        return webdriver.Chrome(service=service, options=options)
+    else:
+        return webdriver.Chrome(options=options)
+    
 def search_google(driver: webdriver.Chrome, keyword: str, site_url: str) -> None:
     """
     在 Google 上搜尋特定網站的關鍵字。
