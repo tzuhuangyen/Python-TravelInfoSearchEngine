@@ -29,6 +29,11 @@ logger = logging.getLogger(__name__)
 ResultDict = Dict[str, List[Any]]
 SiteDict = Dict[str, List[str]]
 
+# 設定超時時間常數 - 增加超時時間以解決超時問題
+WAIT_TIMEOUT = 30  # 增加從 20 秒到 30 秒
+SEARCH_TIMEOUT = 15  # 增加從 10 秒到 15 秒
+PAGE_LOAD_TIMEOUT = 30  # 增加頁面加載超時時間
+
 def convert_num(n: int) -> str:
     """
     這個函數用於生成索引鍵：
@@ -76,9 +81,14 @@ def create_driver(headless: bool = True) -> webdriver.Chrome:
     chrome_driver_path = os.environ.get("CHROMEDRIVER_PATH")
     if chrome_driver_path:
         service = Service(executable_path=chrome_driver_path)
-        return webdriver.Chrome(service=service, options=options)
+        driver = webdriver.Chrome(service=service, options=options)
     else:
-        return webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(options=options)
+    
+    # 設定頁面加載超時時間
+    driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
+    
+    return driver
     
 def search_google(driver: webdriver.Chrome, keyword: str, site_url: str) -> None:
     """
@@ -100,12 +110,12 @@ def search_google(driver: webdriver.Chrome, keyword: str, site_url: str) -> None
         driver.get(url)
         
         # 等待頁面完全加載
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
         
         # 找到搜尋框並輸入查詢
-        search_box = WebDriverWait(driver, 10).until(
+        search_box = WebDriverWait(driver, SEARCH_TIMEOUT).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "textarea[name='q']"))
         )
         search_box.clear()
@@ -114,16 +124,18 @@ def search_google(driver: webdriver.Chrome, keyword: str, site_url: str) -> None
         search_box.submit()
         
         # 等待搜尋結果頁面加載
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             EC.presence_of_element_located((By.XPATH, '//h3'))
         )
         
     except TimeoutException:
         logger.error(f"搜尋超時: {search_query}")
-        raise
+        # 不要直接拋出異常，而是返回空結果
+        return
     except Exception as e:
         logger.error(f"搜尋過程中發生錯誤: {str(e)}")
-        raise
+        # 不要直接拋出異常，而是返回空結果
+        return
 
 def extract_search_results(driver: webdriver.Chrome) -> List[Tuple[str, str]]:
     """
@@ -139,7 +151,7 @@ def extract_search_results(driver: webdriver.Chrome) -> List[Tuple[str, str]]:
     
     try:
         # 等待搜尋結果加載
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             EC.presence_of_element_located((By.XPATH, '//h3'))
         )
         
@@ -199,7 +211,7 @@ def run_scraper(keyword: Optional[str] = None) -> ResultDict:
     
     try:
         # 創建 WebDriver
-        driver = create_driver(headless=False)  # 設為 True 可以不顯示瀏覽器
+        driver = create_driver(headless=True)  # 使用無頭模式提高效能
         
         # 處理每個目標網站
         for key, (site_name, site_url) in site_dict.items():
@@ -225,12 +237,21 @@ def run_scraper(keyword: Optional[str] = None) -> ResultDict:
                 result_dict[site_name] = [result_qty, f"結果有 {result_qty} 筆資料"]
                 
                 # 短暫暫停，避免過於頻繁的請求
-                time.sleep(2)
+                time.sleep(3)  # 增加暫停時間，避免被 Google 視為機器人
                 
             except Exception as e:
                 logger.error(f"處理網站 {site_name} 時發生錯誤: {str(e)}")
                 result_dict[site_name] = [0, f"搜尋失敗: {str(e)}"]
                 continue
+        
+        # 檢查是否有任何結果
+        total_results = sum(value[0] for key, value in result_dict.items() 
+                          if not key.startswith("site_") and not key.endswith(tuple("0123456789")))
+        
+        if total_results == 0:
+            # 如果沒有找到任何結果，添加一個友好的消息
+            result_dict["no_results"] = [True, f"沒有找到與 \"{keyword}\" 相關的旅遊文章"]
+            logger.warning(f"未找到與 \"{keyword}\" 相關的旅遊文章")
         
         logger.info("搜尋完成")
         return result_dict
@@ -242,8 +263,11 @@ def run_scraper(keyword: Optional[str] = None) -> ResultDict:
     finally:
         # 確保 WebDriver 被正確關閉
         if driver:
-            driver.quit()
-            logger.info("WebDriver 已關閉")
+            try:
+                driver.quit()
+                logger.info("WebDriver 已關閉")
+            except Exception as e:
+                logger.error(f"關閉 WebDriver 時發生錯誤: {str(e)}")
 
 # 如果直接運行此文件，則執行爬蟲並打印結果
 if __name__ == "__main__":
